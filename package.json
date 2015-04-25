@@ -1,10 +1,10 @@
 {
   "name": "angular-arg-parse",
-  "version": "0.0.1",
-  "description": "command line arg parser for angular",
+  "version": "0.0.4",
+  "description": "command line arg parser for angular, using arg-parser",
   "main": "dist/arg-parse.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/node-ng/node-ng.js dist/test.js"
   },
   "keywords": [
     "arg",
@@ -15,6 +15,7 @@
   "author": "Kyle Roux <kyle@level2designs.com> (https://github.com/jstacoder)",
   "license": "BSD2",
   "dependencies": {
-    "node-ng": "0.0.3"
+    "arg-parser": "^1.1.0",
+    "node-ng": "0.0.3"   
   }
 }

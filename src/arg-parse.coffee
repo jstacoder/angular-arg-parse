@@ -2,64 +2,38 @@
 
 app = angular.module 'arg.parse.app',[]
 
-app.constant 'process',process
+app.service 'argParser',[require('arg-parser')]
 
-app.provider 'argv',[()->
-    self = @
-
-    self.argList = []
-
-    self.defaultOptions =
-        longOpt:false
-        shortOpt:false
-        required:false
-        action:'store_true'
-        target:false
-
-    getArgs = ()->
-        return self.argList
-
-    addArg = (options)->
-        opts = angular.extend {},self.defaultOptions,options
-        self.argList.push opts
-        return self
-
-    rtn =
-        $get : ['process',(process)->
-            args = process.argv
-            args.shift()
-            args.shift()
-            args.shift()
-            return args
-        ]
-        addArg:addArg
-        getArgs:getArgs
-    return rtn
+app.factory 'parseArgs',['argParser',(argParser)->
+    return ()->
+        argParser.parse()
+        return
 ]
 
-app.provider 'optParse',['argvProvider',(argvProvider)->
-    self = @
-
-    self.parsedArgs = {}
-
-    parseArg = (arg)->
-        parsed =
-            arg:arg.longOpt
-            target:arg.target
-        self.parsedArgs.push parsed
+app.factory 'addArg',['argParser',(argParser)->
+    return (opts)->
+        argParser.add opts
         return
-    getArgs = ()->
-        return self.parsedArgs
+]
 
-    angular.forEach argvProvider.getArgs(),(itm)->
-        parseArg itm
-        return
-    rtn =
-        $get:[()->
-            return getArgs()
-        ]
-        parseArg:parseArg
-        getArgs:getArgs
+app.factory 'parsedArgs',['argParser','parseArgs',(argParser,parseArgs)->
+    parseArgs()
+    return argParser.params
+]
 
-    return rtn
+###
+#   @args.addArg
+#          call with option object like below
+#          opts =
+#               switchs:[]
+#               name : ''
+#               desc : ''
+#               required:true
+#               default:false
+#           args.add opts
+#
+#       now args.parsedArgs has our args
+###
+app.service 'args',['parsedArgs','addArg',class Args
+    constructor : (@parsedArgs,@addArg)->
 ]
