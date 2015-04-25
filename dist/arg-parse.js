@@ -1,78 +1,43 @@
 'use strict';
 
-var app;
+var Args, app;
 
 app = angular.module('arg.parse.app', []);
 
-app.constant('process', process);
+app.service('argParser', [require('arg-parser')]);
 
-app.provider('argv', [
-  function() {
-    var addArg, getArgs, rtn, self;
-    self = this;
-    self.argList = [];
-    self.defaultOptions = {
-      longOpt: false,
-      shortOpt: false,
-      required: false,
-      action: 'store_true',
-      target: false
+app.factory('parseArgs', [
+  'argParser', function(argParser) {
+    return function() {
+      argParser.parse();
     };
-    getArgs = function() {
-      return self.argList;
-    };
-    addArg = function(options) {
-      var opts;
-      opts = angular.extend({}, self.defaultOptions, options);
-      self.argList.push(opts);
-      return self;
-    };
-    rtn = {
-      $get: [
-        'process', function(process) {
-          var args;
-          args = process.argv;
-          args.shift();
-          args.shift();
-          args.shift();
-          return args;
-        }
-      ],
-      addArg: addArg,
-      getArgs: getArgs
-    };
-    return rtn;
   }
 ]);
 
-app.provider('optParse', [
-  'argvProvider', function(argvProvider) {
-    var getArgs, parseArg, rtn, self;
-    self = this;
-    self.parsedArgs = {};
-    parseArg = function(arg) {
-      var parsed;
-      parsed = {
-        arg: arg.longOpt,
-        target: arg.target
-      };
-      self.parsedArgs.push(parsed);
+app.factory('addArg', [
+  'argParser', function(argParser) {
+    return function(opts) {
+      argParser.add(opts);
     };
-    getArgs = function() {
-      return self.parsedArgs;
-    };
-    angular.forEach(argvProvider.getArgs(), function(itm) {
-      parseArg(itm);
-    });
-    rtn = {
-      $get: [
-        function() {
-          return getArgs();
-        }
-      ],
-      parseArg: parseArg,
-      getArgs: getArgs
-    };
-    return rtn;
   }
+]);
+
+app.factory('parsedArgs', [
+  'argParser', 'parseArgs', function(argParser, parseArgs) {
+    parseArgs();
+    return argParser.params;
+  }
+]);
+
+app.service('args', [
+  'parsedArgs', 'addArg', Args = (function() {
+
+    function Args(parsedArgs, addArg) {
+      this.parsedArgs = parsedArgs;
+      this.addArg = addArg;
+    }
+
+    return Args;
+
+  })()
 ]);
